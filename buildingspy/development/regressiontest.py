@@ -3154,7 +3154,7 @@ to access a summary of the comparison results.\n""".format(
             # Deactivate DDE
             if platform.system() == "Windows":
                 posDDE = "9"  # At position 9 DDE settings should be stored.
-                G(f"""
+                runFil.write(f"""
     // Deactivate DDE
     (comp, sett) = GetDymolaCompiler();
     DDE_orig = sett[{posDDE}];
