@@ -268,6 +268,7 @@ class Tester(object):
         # we do not verify whether the directory contains
         # a valid library.
         self._libHome = os.path.abspath(".")
+        self._addLibPackage = None
         self._rootPackage = os.path.join(self._libHome, 'Resources', 'Scripts', 'Dymola')
 
         # Set the tool
@@ -448,6 +449,25 @@ class Tester(object):
         self._libHome = os.path.abspath(rootDir)
         self._rootPackage = os.path.join(self._libHome, 'Resources', 'Scripts', 'Dymola')
         self.isValidLibrary(self._libHome)
+
+    def setAdditionalLibResource(self, addLibPackage):
+        """ Set an additional library directory that should be loaded.
+
+        :param addLibPackage: The top-most directory of the add library as
+        absolute path.
+
+        The addLibPackage directory is the directory that contains
+        the top-level ``package.mo`` file of the additional library that is
+        needed to run the tests.
+
+        Usage: Type
+           >>> import os
+           >>> import buildingspy.development.regressiontest as r
+           >>> rt = r.Tester()
+           >>> myAddLib = os.path.join("myFolder", "myPackage", "package.mo")
+           >>> rt.setAdditionalLibResource(myAddLib)
+        """
+        self._addLibPackage = os.path.join(addLibPackage)
 
     def useExistingResults(self, dirs):
         """ This function allows to use existing results, as opposed to running a simulation.
@@ -3134,13 +3154,16 @@ Advanced.GenerateVariableDependencies = false;
         # Deactivate DDE
         if platform.system() == "Windows":
             posDDE = "9"  # At position 9 DDE settings should be stored.
-            runFil.write(f"""
+            G(f"""
 // Deactivate DDE
 (comp, sett) = GetDymolaCompiler();
 DDE_orig = sett[{posDDE}];
 sett[{posDDE}] = \"DDE=0\"; // Disable DDE
 SetDymolaCompiler(comp, sett);
 """)
+        runFil.write(
+            ('openModel(\"{}\");\n').format(
+            self._addLibPackage))
         runFil.write('cd(\"{}/{}\");\n'.format(
             (self._temDir[iPro]).replace("\\", "/"),
             self.getLibraryName()))
